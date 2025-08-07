@@ -37,25 +37,57 @@ def test(model, loader, num_class=40, vote_num=1):
     classifier = model.eval()
     class_acc = np.zeros((num_class, 3))
 
-    for j, (points, target) in tqdm(enumerate(loader), total=len(loader)):
-        if not args.use_cpu:
-            points, target = points.cuda(), target.cuda()
+    iterable = loader.__iter__()
+    # (points1, target1) = iterable.__next__()
+    (points, target) = iterable.__next__()
 
-        points = points.transpose(2, 1)
-        vote_pool = torch.zeros(target.size()[0], num_class).cuda() if not args.use_cpu else torch.zeros(target.size()[0], num_class).cpu()
+    print('target ------------')
+    print(target)
+    print('points ------------')
+    print(points)
+    # for j, (points, target) in tqdm(enumerate(loader), total=len(loader)):
+    if not args.use_cpu:
+        points, target = points.cuda(), target.cuda()
 
-        for _ in range(vote_num):
-            pred, _ = classifier(points)
-            vote_pool += pred
-        pred = vote_pool / vote_num
-        pred_choice = pred.data.max(1)[1]
+    points = points.transpose(2, 1)
+    print('transposed points ------------')
+    print(points)
+    print(f'len(points[0]) {len(points[0])}')
+    print(f'len(points[0][0]) {len(points[0][0])}')
+    print(f'points[0][0][0]) {points[0][0][0]}')
 
-        for cat in np.unique(target.cpu()):
-            classacc = pred_choice[target == cat].eq(target[target == cat].long().data).cpu().sum()
-            class_acc[cat, 0] += classacc.item() / float(points[target == cat].size()[0])
-            class_acc[cat, 1] += 1
-        correct = pred_choice.eq(target.long().data).cpu().sum()
-        mean_correct.append(correct.item() / float(points.size()[0]))
+    vote_pool = torch.zeros(target.size()[0], num_class).cuda() if not args.use_cpu else torch.zeros(target.size()[0], num_class).cpu()
+
+    for _ in range(vote_num):
+        pred, _ = classifier(points)
+        vote_pool += pred
+    pred = vote_pool / vote_num
+    pred_choice = pred.data.max(1)[1]
+    print('vote_pool ------------')
+    print(vote_pool)
+    print('vote_num ------------')
+    print(vote_num)
+    print('pred ------------')
+    print(pred)
+    print('pred_choice ------------')
+    print(pred_choice)
+
+    for cat in np.unique(target.cpu()):
+        classacc = pred_choice[target == cat].eq(target[target == cat].long().data).cpu().sum()
+        class_acc[cat, 0] += classacc.item() / float(points[target == cat].size()[0])
+        class_acc[cat, 1] += 1
+        print(cat)
+        print(classacc)
+        print(class_acc)
+
+    correct = pred_choice.eq(target.long().data).cpu().sum()
+    mean_correct.append(correct.item() / float(points.size()[0]))
+    print('pred_choice ----------')
+    print(pred_choice)
+    print('target.long().data ----------')
+    print(target.long().data)
+    print('correct ----------')
+    print(correct)
 
     class_acc[:, 2] = class_acc[:, 0] / class_acc[:, 1]
     class_acc = np.mean(class_acc[:, 2])
