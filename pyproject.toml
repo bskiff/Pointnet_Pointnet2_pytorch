@@ -11,4 +11,8 @@ dependencies = [
 ]
 
 [tool.setuptools]
+    include_package_data = true
     packages = ["data_utils", "log", "models", "visualizer"]
+
+[tool.setuptools.package-data]
+    log = ["log/**/*.pth"]
