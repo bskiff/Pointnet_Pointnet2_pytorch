@@ -12,3 +12,6 @@ dependencies = [
 
 [tool.setuptools]
     packages = ["data_utils", "log", "models", "visualizer"]
+
+[tool.setuptools.package-data]
+    weights = ["log/**/*.pth"]
