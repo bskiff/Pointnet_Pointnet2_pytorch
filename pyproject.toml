@@ -9,3 +9,6 @@ dependencies = [
     "torch>=2.7.1",
     "tqdm>=4.67.1",
 ]
+
+[tool.setuptools]
+    packages = ["data_utils", "log", "models", "visualizer"]
